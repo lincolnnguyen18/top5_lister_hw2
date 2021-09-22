@@ -21,6 +21,12 @@ export default class DBManager {
         return JSON.parse(listString);
     }
 
+    updateItem = (key, itemIndex, newName) => {
+        let newList = this.queryGetList(key);
+        newList.items[itemIndex] = newName;
+        localStorage.setItem("top5-list-" + key, JSON.stringify(newList));
+    }
+
     mutationCreateList = (list) => {
         this.mutationUpdateList(list);
     }

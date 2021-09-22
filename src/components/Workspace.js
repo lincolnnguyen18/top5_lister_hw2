@@ -5,6 +5,7 @@ export default class Workspace extends React.Component {
         super(props);
         this.state = {
             editingItem: null,
+            editingText: ''
         }
     }
 
@@ -16,7 +17,7 @@ export default class Workspace extends React.Component {
     }
 
     render() {
-        const { currentList } = this.props;
+        const { currentList, renameItemCallback } = this.props;
         return (
             <div id="top5-workspace">
                 <div id="workspace-edit">
@@ -42,7 +43,8 @@ export default class Workspace extends React.Component {
                                             onClick={(e) => {
                                                 if (e.detail === 2) {
                                                     this.setState({
-                                                        editingItem: index
+                                                        editingItem: index,
+                                                        editingText: item
                                                     })
                                                     console.log(`Edit list item ${item} at index ${index}`)
                                                 }
@@ -60,14 +62,28 @@ export default class Workspace extends React.Component {
                                         >
                                             <input
                                                 type="text"
-                                                value={item}
+                                                value={this.state.editingText}
                                                 onChange={(e) => {
-                                                    this.props.updateItem(e.target.value, index)
+                                                    // this.props.updateItem(e.target.value, index)
+                                                    this.setState({
+                                                        editingText: e.target.value
+                                                    })
                                                 }}
                                                 onBlur={() => {
+                                                    renameItemCallback(this.state.editingText, index)
                                                     this.setState({
-                                                        editingItem: null
+                                                        editingItem: null,
+                                                        editingText: ''
                                                     })
+                                                }}
+                                                onKeyPress={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        renameItemCallback(this.state.editingText, index)
+                                                        this.setState({
+                                                            editingItem: null,
+                                                            editingText: ''
+                                                        })
+                                                    }
                                                 }}
                                             />
                                         </div>
