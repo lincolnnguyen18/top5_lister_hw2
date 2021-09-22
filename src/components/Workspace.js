@@ -5,7 +5,8 @@ export default class Workspace extends React.Component {
         super(props);
         this.state = {
             editingItem: null,
-            editingText: ''
+            editingText: '',
+            weAreOver: null
         }
     }
 
@@ -48,9 +49,10 @@ export default class Workspace extends React.Component {
                                             onDrop={(e) => {
                                                 console.log(`dragged from ${window.dragIndex} to ${index}`)
                                                 this.props.moveItemCallback(window.dragIndex, index)
+                                                this.setState({ weAreOver: null })
                                             }}
                                             onDragOver={(e) => {
-                                                // console.log('drag over')
+                                                this.setState({ weAreOver: index })
                                                 e.preventDefault();
                                             }}
                                             onClick={(e) => {
@@ -62,7 +64,7 @@ export default class Workspace extends React.Component {
                                                     console.log(`Edit list item ${item} at index ${index}`)
                                                 }
                                             }}
-                                            className="top5-item"
+                                            className={`top5-item ${index == this.state.weAreOver ? 'top5-item-dragged-to' : ''}`}
                                         >
                                             {item}
                                         </div>

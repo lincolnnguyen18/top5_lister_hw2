@@ -221,6 +221,9 @@ input {
 .top5-item {
   background-color: var(--swatch-complement);
 }
+.test {
+  background-color: pink;
+}
 .top5-item-dragged-to {
   background-color: var(--swatch-accent);
 }
