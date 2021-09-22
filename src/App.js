@@ -88,6 +88,14 @@ class App extends React.Component {
             this.db.mutationCreateList(newList);
         });
     }
+    addMoveItemTransaction = (oldIndex, newIndex) => {
+        if (oldIndex == newIndex) {
+            return;
+        }
+        let transaction = new MoveItem_Transaction(this, oldIndex, newIndex);
+        this.tps.addTransaction(transaction);
+        this.setState({ canUndo: this.tps.hasTransactionToUndo(), canRedo: this.tps.hasTransactionToRedo() });
+    }
     moveItem = (oldIndex, newIndex) => {
         // move item from oldIndex to newIndex while keeping the order of the other items
         let newItems = this.state.currentList.items;
@@ -253,7 +261,7 @@ class App extends React.Component {
                 <Workspace
                     currentList={this.state.currentList}
                     renameItemCallback={this.renameItem}
-                    moveItemCallback={this.moveItem}
+                    moveItemCallback={this.addMoveItemTransaction}
                 />
                 <Statusbar 
                     currentList={this.state.currentList} />
