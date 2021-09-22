@@ -31,6 +31,9 @@ class App extends React.Component {
             currentList : null,
             sessionData : loadedSessionData,
             listToDelete : null,
+            canUndo: false,
+            canRedo: false,
+            canClose: false,
         }
     }
     sortKeyNamePairsByName = (keyNamePairs) => {
@@ -41,6 +44,13 @@ class App extends React.Component {
     }
     // THIS FUNCTION BEGINS THE PROCESS OF CREATING A NEW LIST
     createNewList = () => {
+        this.setState({
+            canUndo: false,
+            canRedo: false,
+            canClose: true,
+        });
+        this.tps.clearAllTransactions();
+
         // FIRST FIGURE OUT WHAT THE NEW LIST'S KEY AND NAME WILL BE
         let newKey = this.state.sessionData.nextKey;
         let newName = "Untitled" + newKey;
@@ -77,14 +87,23 @@ class App extends React.Component {
             this.db.mutationCreateList(newList);
         });
     }
-    renameItem = (newName, index) => {
-        console.log(this.state.currentList);
-        // console.log(`Rename item ${this.state.currentList.items[index]} at index ${index} to ${newName}`)
+    actuallyRename = (newName, index) => {
+        let oldName = this.state.currentList.items[index];
+        console.log(`Rename item ${oldName} at index ${index} to ${newName}`)
         let currentList = this.state.currentList;
         currentList.items[index] = newName;
         this.setState({ currentList });
         // this.db.mutationUpdateList(currentList);
         this.db.updateItem(currentList.key, index, newName);
+    }
+    renameItem = (newName, index) => {
+        console.log(this.state.currentList);
+        let oldName = this.state.currentList.items[index];
+        if (oldName === newName) {
+            return;
+        }
+        this.tps.addTransaction(new ChangeItem_Transaction(this, index, oldName, newName));
+        this.setState({ canUndo: this.tps.hasTransactionToUndo(), canRedo: this.tps.hasTransactionToRedo() });
     }
     renameList = (key, newName) => {
         let newKeyNamePairs = [...this.state.sessionData.keyNamePairs];
@@ -121,15 +140,23 @@ class App extends React.Component {
     }
     // THIS FUNCTION BEGINS THE PROCESS OF LOADING A LIST FOR EDITING
     loadList = (key) => {
+        // console.log(`Loading list with key ${key} and current list key is ${this.state.currentList ? this.state.currentList.key : null}`)
+        if (this.state.currentList && this.state.currentList.key == key) {
+            // console.log("SAME!")
+            return;
+        }
         let newCurrentList = this.db.queryGetList(key);
         this.setState(prevState => ({
             currentList: newCurrentList,
-            sessionData: prevState.sessionData
+            sessionData: prevState.sessionData,
+            canUndo: false,
+            canRedo: false
         }), () => {
             // ANY AFTER EFFECTS?
-            console.log("Loading list!");
-            // console.log(this.state.currentList.items);
             this.tps.clearAllTransactions();
+            this.setState({ canClose: true });
+            // console.log("Loading list!");
+            // console.log(this.state.currentList.items);
         });
     }
     // THIS FUNCTION BEGINS THE PROCESS OF CLOSING THE CURRENT LIST
@@ -139,7 +166,7 @@ class App extends React.Component {
             listKeyPairMarkedForDeletion : prevState.listKeyPairMarkedForDeletion,
             sessionData: this.state.sessionData
         }), () => {
-            // ANY AFTER EFFECTS?
+            this.setState({ canUndo: false, canRedo: false, canClose: false });
         });
     }
 
@@ -149,6 +176,9 @@ class App extends React.Component {
         // DELETE AND MAKE THAT CONNECTION SO THAT THE
         // NAME PROPERLY DISPLAYS INSIDE THE MODAL
         // console.log(`DELETE list ${this.state.listToDelete.name}`)
+        if (this.state.listToDelete.key == this.state.currentList.key) {
+            this.setState({ canUndo: false, canRedo: false, canClose: false });
+        }
         this.db.mutationDeleteList(this.state.listToDelete.key);
         this.setState(prevState => ({
             sessionData: this.db.queryGetSessionData(),
@@ -181,10 +211,20 @@ class App extends React.Component {
             <div id="app-root">
                 <Banner 
                     title='Top 5 Lister'
-                    closeCallback={this.closeCurrentList}
-                    closeEnabled={this.state.currentList !== null}
-                    undoEnabled={this.tps.hasTransactionToUndo()}
-                    redoEnabled={this.tps.hasTransactionToRedo()}
+                    closeEnabled={this.state.canClose}
+                    undoEnabled={this.state.canUndo}
+                    redoEnabled={this.state.canRedo}
+                    closeCallback={() => {
+                        this.closeCurrentList();
+                    }}
+                    undoCallback={() => {
+                        this.tps.undoTransaction();
+                        this.setState({ canUndo: this.tps.hasTransactionToUndo(), canRedo: this.tps.hasTransactionToRedo() });
+                    }}
+                    doCallback={() => {
+                        this.tps.doTransaction();
+                        this.setState({ canUndo: this.tps.hasTransactionToUndo(), canRedo: this.tps.hasTransactionToRedo() });
+                    }}
                 />
                 <Sidebar
                     heading='Your Lists'
