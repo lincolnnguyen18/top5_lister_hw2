@@ -99,7 +99,7 @@ class App extends React.Component {
 
         // WE MAY HAVE TO RENAME THE currentList
         let currentList = this.state.currentList;
-        if (currentList.key === key) {
+        if (currentList && currentList.key === key) {
             currentList.name = newName;
         }
 
