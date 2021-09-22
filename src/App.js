@@ -3,6 +3,9 @@ import './App.css';
 
 // IMPORT DATA MANAGEMENT AND TRANSACTION STUFF
 import DBManager from './db/DBManager';
+import jsTPS from './common/jsTPS';
+import ChangeItem_Transaction from './transactions/ChangeItem_Transaction';
+import MoveItem_Transaction from './transactions/MoveItem_Transaction';
 
 // THESE ARE OUR REACT COMPONENTS
 import DeleteModal from './components/DeleteModal';
@@ -20,6 +23,8 @@ class App extends React.Component {
 
         // GET THE SESSION DATA FROM OUR DATA MANAGER
         let loadedSessionData = this.db.queryGetSessionData();
+
+        this.tps = new jsTPS();
 
         // SETUP THE INITIAL STATE
         this.state = {
@@ -124,6 +129,7 @@ class App extends React.Component {
             // ANY AFTER EFFECTS?
             console.log("Loading list!");
             // console.log(this.state.currentList.items);
+            this.tps.clearAllTransactions();
         });
     }
     // THIS FUNCTION BEGINS THE PROCESS OF CLOSING THE CURRENT LIST
@@ -175,7 +181,11 @@ class App extends React.Component {
             <div id="app-root">
                 <Banner 
                     title='Top 5 Lister'
-                    closeCallback={this.closeCurrentList} />
+                    closeCallback={this.closeCurrentList}
+                    closeEnabled={this.state.currentList !== null}
+                    undoEnabled={this.tps.hasTransactionToUndo()}
+                    redoEnabled={this.tps.hasTransactionToRedo()}
+                />
                 <Sidebar
                     heading='Your Lists'
                     currentList={this.state.currentList}
