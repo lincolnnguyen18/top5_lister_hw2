@@ -24,7 +24,8 @@ class App extends React.Component {
         // SETUP THE INITIAL STATE
         this.state = {
             currentList : null,
-            sessionData : loadedSessionData
+            sessionData : loadedSessionData,
+            listToDelete : null,
         }
     }
     sortKeyNamePairsByName = (keyNamePairs) => {
@@ -112,6 +113,8 @@ class App extends React.Component {
             sessionData: prevState.sessionData
         }), () => {
             // ANY AFTER EFFECTS?
+            console.log("Loading list!");
+            // console.log(this.state.currentList.items);
         });
     }
     // THIS FUNCTION BEGINS THE PROCESS OF CLOSING THE CURRENT LIST
@@ -124,16 +127,32 @@ class App extends React.Component {
             // ANY AFTER EFFECTS?
         });
     }
+
     deleteList = () => {
         // SOMEHOW YOU ARE GOING TO HAVE TO FIGURE OUT
         // WHICH LIST IT IS THAT THE USER WANTS TO
         // DELETE AND MAKE THAT CONNECTION SO THAT THE
         // NAME PROPERLY DISPLAYS INSIDE THE MODAL
-        this.showDeleteListModal();
+        // console.log(`DELETE list ${this.state.listToDelete.name}`)
+        this.db.mutationDeleteList(this.state.listToDelete.key);
+        this.setState(prevState => ({
+            sessionData: this.db.queryGetSessionData(),
+        }), () => {
+            // THE TRANSACTION STACK IS CLEARED
+            this.hideDeleteListModal();
+        });
     }
+
+
     // THIS FUNCTION SHOWS THE MODAL FOR PROMPTING THE USER
     // TO SEE IF THEY REALLY WANT TO DELETE THE LIST
-    showDeleteListModal() {
+    showDeleteListModal = (keyNamePair) => {
+        console.log(`listToDelete = ${keyNamePair.name}`)
+        this.setState(prevState => ({
+            listToDelete: keyNamePair,
+        }), () => {
+            // ANY AFTER EFFECTS?
+        });
         let modal = document.getElementById("delete-modal");
         modal.classList.add("is-visible");
     }
@@ -153,6 +172,7 @@ class App extends React.Component {
                     currentList={this.state.currentList}
                     keyNamePairs={this.state.sessionData.keyNamePairs}
                     createNewListCallback={this.createNewList}
+                    showModalCallback={this.showDeleteListModal}
                     deleteListCallback={this.deleteList}
                     loadListCallback={this.loadList}
                     renameListCallback={this.renameList}
@@ -163,6 +183,8 @@ class App extends React.Component {
                     currentList={this.state.currentList} />
                 <DeleteModal
                     hideDeleteListModalCallback={this.hideDeleteListModal}
+                    listToDelete={this.state.listToDelete}
+                    deleteListCallback={this.deleteList}
                 />
             </div>
         );

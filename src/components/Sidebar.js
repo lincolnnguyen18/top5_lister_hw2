@@ -9,6 +9,7 @@ export default class Sidebar extends React.Component {
                 createNewListCallback, 
                 deleteListCallback, 
                 loadListCallback,
+                showModalCallback,
                 renameListCallback} = this.props;
         return (
             <div id="top5-sidebar">
@@ -28,7 +29,8 @@ export default class Sidebar extends React.Component {
                             key={pair.key}
                             keyNamePair={pair}
                             selected={(currentList !== null) && (currentList.key === pair.key)}
-                            deleteListCallback={deleteListCallback}
+                            showModal={showModalCallback}
+                            deleteListCallback={() => deleteListCallback(pair.key)}
                             loadListCallback={loadListCallback}
                             renameListCallback={renameListCallback}
                         />
