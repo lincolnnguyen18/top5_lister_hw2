@@ -77,7 +77,8 @@ export default class ListCard extends React.Component {
                     id={keyNamePair.key}
                     key={keyNamePair.key}
                     onClick={this.handleClick}
-                    className={'list-card ' + selectClass}>
+                    className={'list-card ' + selectClass}
+                >
                     <span
                         id={"list-card-text-" + keyNamePair.key}
                         key={keyNamePair.key}
