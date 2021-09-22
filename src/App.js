@@ -34,6 +34,7 @@ class App extends React.Component {
             canUndo: false,
             canRedo: false,
             canClose: false,
+            dragIndex: null,
         }
     }
     sortKeyNamePairsByName = (keyNamePairs) => {
@@ -85,6 +86,19 @@ class App extends React.Component {
             // PUTTING THIS NEW LIST IN PERMANENT STORAGE
             // IS AN AFTER EFFECT
             this.db.mutationCreateList(newList);
+        });
+    }
+    moveItem = (oldIndex, newIndex) => {
+        // move item from oldIndex to newIndex while keeping the order of the other items
+        let newItems = this.state.currentList.items;
+        let itemToMove = newItems[oldIndex];
+        newItems.splice(oldIndex, 1);
+        newItems.splice(newIndex, 0, itemToMove);
+        this.setState({
+            currentList: {
+                ...this.state.currentList,
+                items: newItems
+            }
         });
     }
     actuallyRename = (newName, index) => {
@@ -239,6 +253,7 @@ class App extends React.Component {
                 <Workspace
                     currentList={this.state.currentList}
                     renameItemCallback={this.renameItem}
+                    moveItemCallback={this.moveItem}
                 />
                 <Statusbar 
                     currentList={this.state.currentList} />

@@ -40,6 +40,19 @@ export default class Workspace extends React.Component {
                                     return (
                                         <div
                                             id={`item-${index}`}
+                                            draggable="true"
+                                            onDragStart={(e) => {
+                                                window.dragIndex = index;
+                                                console.log(`drag called from at index ${index}`)
+                                            }}
+                                            onDrop={(e) => {
+                                                console.log(`dragged from ${window.dragIndex} to ${index}`)
+                                                this.props.moveItemCallback(window.dragIndex, index)
+                                            }}
+                                            onDragOver={(e) => {
+                                                // console.log('drag over')
+                                                e.preventDefault();
+                                            }}
                                             onClick={(e) => {
                                                 if (e.detail === 2) {
                                                     this.setState({
