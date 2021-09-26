@@ -36,6 +36,17 @@ class App extends React.Component {
             canClose: false,
             dragIndex: null,
         }
+
+        // Listen for ctrl z and ctrl y
+        document.addEventListener('keydown', (event) => {
+            if (event.keyCode === 90 && event.ctrlKey) {
+                this.tps.undoTransaction();
+                this.setState({ canUndo: this.tps.hasTransactionToUndo(), canRedo: this.tps.hasTransactionToRedo() });
+            } else if (event.keyCode === 89 && event.ctrlKey) {
+                this.tps.doTransaction();
+                this.setState({ canUndo: this.tps.hasTransactionToUndo(), canRedo: this.tps.hasTransactionToRedo() });
+            }
+        });
     }
     sortKeyNamePairsByName = (keyNamePairs) => {
         keyNamePairs.sort((keyPair1, keyPair2) => {
